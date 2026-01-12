@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Tài Xỉu Private</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { background: #000; color: #00ff00; font-family: 'Segoe UI', monospace; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .container { width: 100%; max-width: 400px; border: 2px solid #00ff00; background: #050505; padding: 20px; box-sizing: border-box; }
+        .header { text-align: center; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1rem; }
+        .val { color: #fff; }
+        .main-result { font-size: 3rem; text-align: center; font-weight: bold; margin: 30px 0; text-transform: uppercase; border: 1px dashed #00ff00; padding: 10px; }
+        .history { height: 200px; overflow-y: auto; font-size: 0.9rem; border-top: 1px solid #333; padding-top: 10px; }
+        .tai { color: #ff4d4d; } .xiu { color: #4d94ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">[ HỆ THỐNG THEO DÕI OFFLINE ]</div>
+        <div class="stat-row"><span>Phiên:</span> <span id="phien" class="val">--</span></div>
+        <div class="stat-row"><span>Xúc xắc:</span> <span id="xucxac" class="val">?-?-?</span></div>
+        <div class="stat-row"><span>Tổng:</span> <span id="tong" class="val">--</span></div>
+        
+        <div id="ketqua" class="main-result">ĐỢI...</div>
+        
+        <div class="history" id="logs"></div>
+    </div>
+
+    <script>
+        const dbUrl = "https://app-tai-xiu-default-rtdb.firebaseio.com/taixiu_sessions/current.json";
+        let lastP = null;
+
+        async function update() {
+            try {
+                const res = await fetch(dbUrl);
+                const data = await res.json();
+                if (data && data.Phien !== lastP) {
+                    $('#phien').text("#" + data.Phien);
+                    $('#xucxac').text(`${data.Xuc_xac_1}-${data.Xuc_xac_2}-${data.Xuc_xac_3}`);
+                    $('#tong').text(data.Tong);
+                    
+                    const kq = $('#ketqua');
+                    kq.text(data.Ket_qua);
+                    kq.css('color', data.Ket_qua === "Tài" ? "#ff4d4d" : "#4d94ff");
+
+                    const log = `<div>[${data.Thoi_gian.split(' ')[1]}] #${data.Phien}: <b class="${data.Ket_qua === 'Tài'?'tai':'xiu'}">${data.Ket_qua}</b> (${data.Tong})</div>`;
+                    $('#logs').prepend(log);
+                    lastP = data.Phien;
+                }
+            } catch (e) { console.log("Lỗi tải dữ liệu"); }
+        }
+        setInterval(update, 2000);
+        update();
+    </script>
+</body>
+</html>
